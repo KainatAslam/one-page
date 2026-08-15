@@ -1,47 +1,50 @@
-<template>
-  <section id="about" class="about-section section-padding">
+﻿<template>
+  <section id="about" class="section-padding bg-white">
     <div class="container">
-      <div class="about-grid">
-        <div class="about-image-column">
-          <div class="about-visual-card glass-card">
-            <div class="quote-box">
-              <span class="quote-mark">“</span>
-              <p class="quote-text">
-                Nature has already perfected the art of nourishment. Our job is simply to bottle it with integrity, purity, and clinical elegance.
-              </p>
-              <div class="quote-author">
-                <strong>Elena Vance</strong>
-                <span>Master Botanist & Founder</span>
-              </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
+        <!-- Image -->
+        <div class="glass-card p-12 lg:p-14 bg-gradient-to-br from-indigo-primary to-indigo-primary text-white shadow-indigo-lg border-sm">
+          <div class="flex flex-col">
+            <span class="font-heading text-8xl leading-none text-indigo-accent -mb-4 block">"</span>
+            <p class="font-heading text-2xl leading-relaxed italic mb-8 text-indigo-bg">
+              A clean tank means safer water for every family, every meal, and every day. Clean &amp; Cool makes that protection simple and effective.
+            </p>
+            <div class="flex flex-col">
+              <strong class="block text-lg text-indigo-accent">Clean &amp; Cool</strong>
+              <span class="text-sm text-white/70">Water Tank Care Experts</span>
             </div>
           </div>
         </div>
 
-        <div class="about-text-column">
-          <div class="section-tag">Our Story & Mission</div>
-          <h2 class="section-title">Rooted in Organic Purity, Crafted with Botanical Mastery</h2>
-          <p class="about-paragraph">
-            Founded in 2021 in the heart of coastal Pacific bio-regions, <strong>AURA Botanical</strong> was born out of a desire to eliminate synthetic fillers, artificial fragrances, and watered-down formulas from high-performance skincare.
+        <!-- Text -->
+        <div>
+          <div class="section-tag">About Us</div>
+          <h2 class="section-title text-left">Your trusted solution for cleaner, safer water storage</h2>
+          
+          <p class="text-lg text-indigo-primary mb-4 leading-relaxed">
+            Clean &amp; Cool is a trusted brand offering high-quality Water Tank Cleaner Powder. Our powder helps remove sludge, algae, bacteria, and bad odor that build up on tank walls and floors, making water safer for daily use.
           </p>
-          <p class="about-paragraph">
-            We source wild-harvested cold-pressed oils, active bakuchiol, bioactive rosehip, and steam-distilled hydrosols directly from sustainable organic farms. Every batch is formulated in micro-lots to ensure peak nutrient density and freshness for your skin's microbiome.
+          
+          <p class="text-lg text-indigo-primary mb-8 leading-relaxed">
+            A dirty water tank can lead to diseases such as typhoid, hepatitis, diarrhea, and skin infections. Regular use of Clean &amp; Cool powder keeps your household water clean, safe, and healthy — in an easy, fast, and affordable way.
           </p>
 
-          <div class="about-pillars">
-            <div class="pillar-card">
-              <div class="pillar-icon">🌱</div>
-              <h4>Pure Botanical Actives</h4>
-              <p>Formulated without silicone, parabens, synthetic dyes, or artificial fragrances.</p>
+          <!-- Pillars -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-8 pt-8 border-t border-indigo-dark/10">
+            <div class="flex flex-col gap-2">
+              <div class="text-3xl">🧼</div>
+              <h4 class="font-body font-bold text-sm text-indigo-dark">Fast Cleaning</h4>
+              <p class="text-xs text-indigo-primary leading-relaxed">Apply powder, scrub with a brush, and remove dirt and stains instantly.</p>
             </div>
-            <div class="pillar-card">
-              <div class="pillar-icon">🧪</div>
-              <h4>Micro-Batch Integrity</h4>
-              <p>Hand-poured in small batches to preserve bioactive antioxidant potency.</p>
+            <div class="flex flex-col gap-2">
+              <div class="text-3xl">🛡️</div>
+              <h4 class="font-body font-bold text-sm text-indigo-dark">Safe Water</h4>
+              <p class="text-xs text-indigo-primary leading-relaxed">Helps fight algae, bacteria, and bad odor for healthier stored water.</p>
             </div>
-            <div class="pillar-card">
-              <div class="pillar-icon">🌍</div>
-              <h4>Ethical Sustainability</h4>
-              <p>Cruelty-free, vegan certified, housed in 100% recyclable dark violet glass.</p>
+            <div class="flex flex-col gap-2">
+              <div class="text-3xl">🏠</div>
+              <h4 class="font-body font-bold text-sm text-indigo-dark">Every Space</h4>
+              <p class="text-xs text-indigo-primary leading-relaxed">Suitable for homes, offices, schools, and commercial tanks of all sizes.</p>
             </div>
           </div>
         </div>
@@ -55,110 +58,3 @@ export default {
   name: 'AboutSection'
 };
 </script>
-
-<style scoped>
-.about-section {
-  background-color: var(--color-white);
-  position: relative;
-}
-
-.about-grid {
-  display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  gap: 4rem;
-  align-items: center;
-}
-
-.about-visual-card {
-  padding: 3.5rem 2.5rem;
-  background: linear-gradient(135deg, var(--color-emerald-dark) 0%, var(--color-emerald-primary) 100%);
-  color: var(--color-white);
-  border-radius: 28px;
-  position: relative;
-  box-shadow: var(--shadow-lg);
-}
-
-.quote-mark {
-  font-family: var(--font-heading);
-  font-size: 5rem;
-  line-height: 1;
-  color: var(--color-gold);
-  display: block;
-  margin-bottom: -1rem;
-}
-
-.quote-text {
-  font-family: var(--font-heading);
-  font-size: 1.35rem;
-  line-height: 1.6;
-  font-style: italic;
-  margin-bottom: 2rem;
-  color: #E2EBE5;
-}
-
-.quote-author strong {
-  display: block;
-  font-size: 1.1rem;
-  color: var(--color-gold);
-}
-
-.quote-author span {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.about-text-column .section-title {
-  text-align: left;
-  margin-bottom: 1.5rem;
-}
-
-.about-paragraph {
-  font-size: 1.05rem;
-  color: var(--color-text-muted);
-  margin-bottom: 1.25rem;
-  line-height: 1.75;
-}
-
-.about-pillars {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.2rem;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(26, 36, 32, 0.1);
-}
-
-.pillar-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.pillar-icon {
-  font-size: 1.8rem;
-}
-
-.pillar-card h4 {
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--color-emerald-dark);
-}
-
-.pillar-card p {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-  line-height: 1.5;
-}
-
-@media (max-width: 968px) {
-  .about-grid {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
-  }
-  .about-pillars {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-}
-</style>
