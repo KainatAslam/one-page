@@ -7,6 +7,13 @@
     <!-- 1. Hero Overview Section -->
     <HeroSection @open-modal="handleOpenModal(null)" />
 
+    <!-- Order Modal Dialog -->
+    <ProductModal 
+      :is-open="isModalOpen" 
+      :products="products"
+      :selected-product="activeSelectedProduct"
+      @close="handleCloseModal"
+    />
     <!-- 2. About Section -->
     <AboutSection />
 
@@ -20,13 +27,7 @@
     <!-- 4. Contact Section -->
     <ContactSection />
 
-    <!-- Order Modal Dialog -->
-    <ProductModal 
-      :is-open="isModalOpen" 
-      :products="products"
-      :selected-product="activeSelectedProduct"
-      @close="handleCloseModal"
-    />
+
 
     <!-- Footer -->
     <footer class="app-footer">
