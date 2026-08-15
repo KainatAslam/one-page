@@ -1,5 +1,6 @@
 <template>
   <div id="app-root">
+
     <!-- Navigation Bar -->
     <Navbar @open-modal="handleOpenModal(null)" />
 
@@ -32,10 +33,10 @@
       <div class="container footer-container">
         <div class="footer-brand">
           <div class="brand-title">
-            <span>🌿 AURA BOTANICAL</span>
+            <span>💧 CLEAN &amp; COOL</span>
           </div>
           <p class="brand-desc">
-            Handcrafted micro-batch organic skincare, elixirs, and hydrosols. Formulated with ethical bio-actives for pure radiant skin.
+            Your trusted water tank cleaner powder for safer, healthier water storage. Easy to use, effective on sludge, algae, odor, and bacteria.
           </p>
         </div>
 
@@ -50,16 +51,20 @@
 
           <div class="footer-col">
             <h4>Direct Action</h4>
-            <button class="btn-cta btn-footer-cta" @click="handleOpenModal(null)">
-              <span>Order Skincare</span>
-            </button>
+            <AppButton
+              variant="primary"
+              size="sm"
+              label="Order Now"
+              class="w-full sm:w-auto"
+              @click="handleOpenModal(null)"
+            />
           </div>
         </div>
       </div>
 
       <div class="footer-bottom">
         <div class="container copyright-row">
-          <p>© 2026 AURA Botanical Studio. All rights reserved. Server Excel Order Logging Active.</p>
+          <p>© 2026 Clean &amp; Cool. All rights reserved. Server Excel Order Logging Active.</p>
         </div>
       </div>
     </footer>
@@ -73,6 +78,7 @@ import AboutSection from './components/AboutSection.vue';
 import ProductsSection from './components/ProductsSection.vue';
 import ContactSection from './components/ContactSection.vue';
 import ProductModal from './components/ProductModal.vue';
+import AppButton from './components/ui/AppButton.vue';
 
 export default {
   name: 'App',
@@ -82,7 +88,8 @@ export default {
     AboutSection,
     ProductsSection,
     ContactSection,
-    ProductModal
+    ProductModal,
+    AppButton
   },
   data() {
     return {
@@ -90,31 +97,31 @@ export default {
       activeSelectedProduct: null,
       products: [
         {
-          id: 'serum',
-          name: 'Rosehip Radiance Facial Serum',
-          tag: 'Best Seller',
-          volume: '30ml / 1.0 fl oz',
-          price: 48.00,
-          image: '/images/aura_serum.png',
-          description: 'Cold-pressed Rosehip, Marula oil, and Vitamin C lipid formula for collagen restoration and luminous skin complexion.'
+          id: 'home',
+          name: 'Clean & Cool Water Tank Cleaner Powder',
+          tag: 'Home Tank',
+          volume: '1kg / 2.2lb',
+          price: 299.00,
+          image: '/images/product-placeholder.png',
+          description: 'Removes sludge, algae, and odor from household tanks for cleaner, safer water and peace of mind.'
         },
         {
-          id: 'elixir',
-          name: 'Night Renewal Elixir',
-          tag: 'Restorative',
-          volume: '50ml / 1.7 fl oz',
-          price: 56.00,
-          image: '/images/aura_elixir.png',
-          description: 'Potent nocturnal treatment with natural Bakuchiol and Blue Tansy to diminish fine lines while you sleep.'
+          id: 'commercial',
+          name: 'Commercial Tank Cleaning Pack',
+          tag: 'Office & School',
+          volume: '2kg / 4.4lb',
+          price: 499.00,
+          image: '/images/product-placeholder.png',
+          description: 'Built for larger storage systems needing deeper cleaning, stronger hygiene, and regular maintenance.'
         },
         {
-          id: 'mist',
-          name: 'Botanical Hydrating Mist',
-          tag: 'Refreshing',
-          volume: '100ml / 3.4 fl oz',
-          price: 32.00,
-          image: '/images/aura_mist.png',
-          description: 'Soothing organic Cucumber & Rose Damascena hydrosol mist that calms redness and locks in vital hydration.'
+          id: 'kit',
+          name: 'Tank Care Starter Kit',
+          tag: 'Heavy Duty',
+          volume: '3kg / 6.6lb',
+          price: 699.00,
+          image: '/images/product-placeholder.png',
+          description: 'A robust cleaning solution for full tank upkeep, stubborn residue, and long-term water safety.'
         }
       ]
     };
@@ -131,92 +138,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.app-footer {
-  background: var(--color-emerald-dark);
-  color: #E2EBE5;
-  padding-top: 4rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.footer-container {
-  display: flex;
-  justify-content: space-between;
-  gap: 3rem;
-  padding-bottom: 3.5rem;
-}
-
-.footer-brand {
-  max-width: 420px;
-}
-
-.brand-title {
-  font-family: var(--font-heading);
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--color-gold);
-  margin-bottom: 1rem;
-}
-
-.brand-desc {
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.footer-links {
-  display: flex;
-  gap: 4rem;
-}
-
-.footer-col {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.footer-col h4 {
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--color-gold);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.footer-col a {
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: color 0.2s ease;
-}
-
-.footer-col a:hover {
-  color: var(--color-gold);
-}
-
-.btn-footer-cta {
-  padding: 0.6rem 1.2rem;
-  font-size: 0.85rem;
-}
-
-.footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 1.5rem 0;
-  text-align: center;
-  font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-@media (max-width: 768px) {
-  .footer-container {
-    flex-direction: column;
-    gap: 2rem;
-  }
-  .footer-links {
-    flex-direction: column;
-    gap: 2rem;
-  }
-}
-</style>

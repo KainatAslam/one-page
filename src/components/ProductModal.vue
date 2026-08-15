@@ -1,724 +1,432 @@
-<template>
-  <Teleport to="body">
-    <Transition name="modal-fade">
-      <div v-if="isOpen" class="modal-backdrop" @click.self="closeModal">
-        <div class="modal-container glass-card" role="dialog" aria-modal="true">
-          <!-- Close Button -->
-          <button class="modal-close-btn" @click="closeModal" aria-label="Close modal">
+﻿<template>
+  <transition name="modal">
+    <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center">
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-indigo-dark/65" @click="$emit('close')"></div>
+
+      <!-- Modal Content -->
+      <div class="glass-card relative w-full max-w-3xl max-h-[95vh] mx-4 shadow-2xl border border-white/80 border-sm overflow-y-auto">
+        <!-- Close Button -->
+        <AppButton
+          variant="ghost"
+          size="sm"
+          aria-label="Close modal"
+          class="absolute top-6 right-6 z-10 !px-2 !py-2"
+          @click="$emit('close')"
+        >
+          <template #icon-left>
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+          </template>
+        </AppButton>
 
-          <!-- Modal Header -->
-          <div class="modal-header">
-            <div class="modal-badge">Direct Server Checkout</div>
-            <h2 class="modal-title">Customize Your Botanical Order</h2>
-            <p class="modal-subtitle">Adjust item quantities below and provide your delivery details.</p>
-          </div>
+        <!-- Content -->
+        <div class="p-8">
+          <!-- Title -->
+          <h2 class="font-heading text-3xl font-bold text-indigo-dark mb-8">Order Clean &amp; Cool</h2>
 
-          <!-- SUCCESS CONFIRMATION STATE -->
-          <div v-if="orderSubmitted" class="modal-success-state">
-            <div class="success-icon-wrap">
-              <span class="success-checkmark">✓</span>
-            </div>
-            <h3 class="success-title">Order Placed Successfully!</h3>
-            <p class="success-msg">
-              Thank you, <strong>{{ customerForm.fullName }}</strong>! Your order reference is 
-              <span class="order-ref">{{ successOrderId }}</span>.
-            </p>
-            <p class="success-sub">
-              Your submission has been securely recorded on our server records. Our team will contact you shortly to confirm delivery.
-            </p>
-            <div class="success-actions">
-              <button class="btn-cta btn-cta-emerald" @click="resetAndClose">
-                <span>Done / Continue Browsing</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- ORDER FORM STATE -->
-          <div v-else class="modal-body">
-            <!-- 1. PRODUCT QUANTITY SELECTOR LIST -->
-            <div class="section-box">
-              <h3 class="box-title">
-                <span>1. Select Products & Quantities</span>
-                <span class="total-badge">Total: ${{ grandTotal.toFixed(2) }}</span>
-              </h3>
-
-              <div class="product-selector-list">
+          <form @submit.prevent="handleSubmit" class="space-y-6">
+            <!-- Product Selection Section -->
+            <div class="pb-6 border-b border-indigo-primary/20">
+              <label class="block text-sm font-bold text-indigo-primary mb-4">
+                <span class="text-red-600">*</span> Select Products
+              </label>
+              <div class="grid grid-cols-1 gap-3">
                 <div 
-                  v-for="item in quantities" 
-                  :key="item.id" 
-                  class="selector-item"
-                  :class="{ 'item-selected': item.quantity > 0 }"
+                  v-for="product in products"
+                  :key="product.id"
+                  @click="selectProduct(product)"
+                  class="flex items-center gap-4 p-4 bg-indigo-bg border-2 border-sm cursor-pointer transition-all duration-fast"
+                  :class="selectedProducts.includes(product.id) ? 'border-indigo-primary bg-indigo-primary/10' : 'border-indigo-primary/30 hover:border-indigo-primary/60'"
                 >
-                  <img :src="item.image" :alt="item.name" class="selector-thumb" />
-                  <div class="selector-info">
-                    <div class="selector-name">{{ item.name }}</div>
-                    <div class="selector-price">${{ item.price.toFixed(2) }} / unit</div>
+                  <div class="w-14 h-14 overflow-hidden flex-shrink-0 border-sm">
+                    <img :src="product.image" :alt="product.name" class="w-full h-full object-cover"/>
                   </div>
-
-                  <div class="quantity-control">
-                    <button 
-                      class="qty-btn" 
-                      @click="decreaseQty(item.id)" 
-                      :disabled="item.quantity === 0"
-                      aria-label="Decrease quantity"
-                    >-</button>
-                    <span class="qty-display">{{ item.quantity }}</span>
-                    <button 
-                      class="qty-btn" 
-                      @click="increaseQty(item.id)" 
-                      aria-label="Increase quantity"
-                    >+</button>
+                  <div class="flex-grow">
+                    <h4 class="font-bold text-indigo-dark">{{ product.name }}</h4>
+                    <p class="text-sm text-indigo-primary">{{ product.volume }}</p>
                   </div>
+                  <div class="text-right">
+                    <p class="font-heading font-bold text-indigo-primary text-lg">${{ product.price.toFixed(2) }}</p>
+                  </div>
+                  <input 
+                    type="checkbox"
+                    :checked="selectedProducts.includes(product.id)"
+                    class="w-5 h-5 border-2 border-indigo-primary cursor-pointer border-sm"
+                  />
                 </div>
-              </div>
-
-              <!-- Item validation error -->
-              <div v-if="formErrors.items" class="error-banner">
-                {{ formErrors.items }}
               </div>
             </div>
 
-            <!-- 2. CUSTOMER DELIVERY DETAILS FORM -->
-            <form @submit.prevent="submitOrder" class="section-box customer-form">
-              <h3 class="box-title">
-                <span>2. Delivery & Customer Details</span>
-              </h3>
-
-              <div class="form-grid">
-                <!-- Full Name -->
-                <div class="form-group full-width">
-                  <label for="fullName">Full Name <span class="req">*</span></label>
-                  <input 
-                    id="fullName" 
-                    v-model="customerForm.fullName" 
-                    type="text" 
-                    placeholder="e.g. Sarah Jenkins"
-                    :class="{ 'input-error': formErrors.fullName }"
-                  />
-                  <span v-if="formErrors.fullName" class="field-error">{{ formErrors.fullName }}</span>
-                </div>
-
-                <!-- Phone -->
-                <div class="form-group">
-                  <label for="phone">Phone Number <span class="req">*</span></label>
-                  <input 
-                    id="phone" 
-                    v-model="customerForm.phone" 
-                    type="tel" 
-                    placeholder="e.g. +1 (555) 019-2834"
-                    :class="{ 'input-error': formErrors.phone }"
-                  />
-                  <span v-if="formErrors.phone" class="field-error">{{ formErrors.phone }}</span>
-                </div>
-
-                <!-- Email -->
-                <div class="form-group">
-                  <label for="email">Email Address <span class="req">*</span></label>
-                  <input 
-                    id="email" 
-                    v-model="customerForm.email" 
-                    type="email" 
-                    placeholder="sarah@example.com"
-                    :class="{ 'input-error': formErrors.email }"
-                  />
-                  <span v-if="formErrors.email" class="field-error">{{ formErrors.email }}</span>
-                </div>
-
-                <!-- Address -->
-                <div class="form-group full-width">
-                  <label for="address">Street Address <span class="req">*</span></label>
-                  <input 
-                    id="address" 
-                    v-model="customerForm.address" 
-                    type="text" 
-                    placeholder="e.g. 742 Evergreen Terrace, Suite 4B"
-                    :class="{ 'input-error': formErrors.address }"
-                  />
-                  <span v-if="formErrors.address" class="field-error">{{ formErrors.address }}</span>
-                </div>
-
-                <!-- City -->
-                <div class="form-group">
-                  <label for="city">City <span class="req">*</span></label>
-                  <input 
-                    id="city" 
-                    v-model="customerForm.city" 
-                    type="text" 
-                    placeholder="e.g. San Francisco"
-                    :class="{ 'input-error': formErrors.city }"
-                  />
-                  <span v-if="formErrors.city" class="field-error">{{ formErrors.city }}</span>
-                </div>
-
-                <!-- Postal Code -->
-                <div class="form-group">
-                  <label for="postalCode">Postal Code <span class="req">*</span></label>
-                  <input 
-                    id="postalCode" 
-                    v-model="customerForm.postalCode" 
-                    type="text" 
-                    placeholder="e.g. 94107"
-                    :class="{ 'input-error': formErrors.postalCode }"
-                  />
-                  <span v-if="formErrors.postalCode" class="field-error">{{ formErrors.postalCode }}</span>
-                </div>
-              </div>
-
-              <!-- General Submission Error Banner -->
-              <div v-if="submissionError" class="error-banner">
-                {{ submissionError }}
-              </div>
-
-              <!-- Submit Button -->
-              <div class="modal-footer">
-                <button 
-                  type="submit" 
-                  class="btn-cta btn-submit-order" 
-                  :disabled="isSubmitting"
+            <!-- Product Quantities Section -->
+            <div v-if="selectedProducts.length > 0" class="pb-6 border-b border-indigo-primary/20">
+              <label class="block text-sm font-bold text-indigo-primary mb-4">
+                <span class="text-red-600">*</span> Quantity per Product
+              </label>
+              <div class="space-y-3">
+                <div 
+                  v-for="productId in selectedProducts"
+                  :key="`qty-${productId}`"
+                  class="flex items-center justify-between p-4 bg-indigo-bg border border-indigo-primary/20 border-sm"
                 >
-                  <span v-if="isSubmitting" class="spinner"></span>
-                  <span v-else>Confirm & Place Order (${{ grandTotal.toFixed(2) }})</span>
-                </button>
+                  <span class="font-semibold text-indigo-dark">{{ products.find(p => p.id === productId)?.name }}</span>
+                  <div class="flex items-center gap-2 bg-white p-1 border-sm">
+                    <AppButton
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      class="!px-2 !py-2"
+                      :aria-label="`Decrease quantity for ${productId}`"
+                      @click="decrementProductQuantity(productId)"
+                    >
+                      <template #default>−</template>
+                    </AppButton>
+                    <input 
+                      :value="getProductQuantity(productId)" 
+                      type="number" 
+                      min="1"
+                      @change="(e) => setProductQuantity(productId, parseInt(e.target.value) || 1)"
+                      class="w-16 text-center bg-transparent text-indigo-dark font-bold outline-none"
+                    />
+                    <AppButton
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      class="!px-2 !py-2"
+                      :aria-label="`Increase quantity for ${productId}`"
+                      @click="incrementProductQuantity(productId)"
+                    >
+                      <template #default>+</template>
+                    </AppButton>
+                  </div>
+                </div>
               </div>
-            </form>
-          </div>
+            </div>
+
+            <!-- Customer Details Section -->
+            <div class="pb-6 border-b border-indigo-primary/20">
+              <h3 class="text-lg font-bold text-indigo-dark mb-4">Customer Information</h3>
+              
+              <!-- Name & Email Row -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-sm font-bold text-indigo-primary mb-2">
+                    <span class="text-red-600">*</span> Full Name
+                  </label>
+                  <input 
+                    v-model="formData.name"
+                    type="text" 
+                    placeholder="John Doe"
+                    required
+                    class="w-full bg-white text-indigo-dark px-4 py-3 border-2 border-indigo-primary/20 border-sm focus:border-indigo-primary focus:outline-none transition-all duration-fast"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-indigo-primary mb-2">
+                    <span class="text-red-600">*</span> Email
+                  </label>
+                  <input
+                    v-model="formData.email"
+                    type="email"
+                    placeholder="john@example.com"
+                    required
+                    class="w-full bg-white text-indigo-dark px-4 py-3 border-2 border-indigo-primary/20 border-sm focus:border-indigo-primary focus:outline-none transition-all duration-fast"
+                  />
+                </div>
+              </div>
+
+              <!-- Phone Row -->
+              <div class="mb-4">
+                <label class="block text-sm font-bold text-indigo-primary mb-2">
+                  <span class="text-red-600">*</span> Phone Number
+                </label>
+                <input 
+                  v-model="formData.phone"
+                  type="tel" 
+                  placeholder="+1 (555) 123-4567"
+                  required
+                  class="w-full bg-white text-indigo-dark px-4 py-3 border-2 border-indigo-primary/20 border-sm focus:border-indigo-primary focus:outline-none transition-all duration-fast"
+                />
+              </div>
+
+              <!-- Address Row -->
+              <div class="mb-4">
+                <label class="block text-sm font-bold text-indigo-primary mb-2">
+                  <span class="text-red-600">*</span> Street Address
+                </label>
+                <input 
+                  v-model="formData.address"
+                  type="text" 
+                  placeholder="123 Main Street"
+                  required
+                  class="w-full bg-white text-indigo-dark px-4 py-3 border-2 border-indigo-primary/20 border-sm focus:border-indigo-primary focus:outline-none transition-all duration-fast"
+                />
+              </div>
+
+              <!-- City & Postal Code Row -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-bold text-indigo-primary mb-2">
+                    <span class="text-red-600">*</span> City
+                  </label>
+                  <input 
+                    v-model="formData.city"
+                    type="text" 
+                    placeholder="New York"
+                    required
+                    class="w-full bg-white text-indigo-dark px-4 py-3 border-2 border-indigo-primary/20 border-sm focus:border-indigo-primary focus:outline-none transition-all duration-fast"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-indigo-primary mb-2">
+                    <span class="text-red-600">*</span> Postal Code
+                  </label>
+                  <input 
+                    v-model="formData.postalCode"
+                    type="text" 
+                    placeholder="10001"
+                    required
+                    class="w-full bg-white text-indigo-dark px-4 py-3 border-2 border-indigo-primary/20 border-sm focus:border-indigo-primary focus:outline-none transition-all duration-fast"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="p-4 bg-indigo-bg border border-indigo-primary/20 border-sm">
+              <div class="space-y-2 mb-4 pb-4 border-b border-indigo-primary/20">
+                <div class="text-sm font-semibold text-indigo-primary">Order Summary:</div>
+                <div v-for="productId in selectedProducts" :key="`summary-${productId}`" class="text-xs text-indigo-primary">
+                  {{ products.find(p => p.id === productId)?.name }} × {{ getProductQuantity(productId) }}
+                </div>
+              </div>
+              <div class="flex justify-between items-center mb-3 pb-3 border-b border-indigo-primary/20">
+                <span class="text-indigo-primary font-semibold">Subtotal:</span>
+                <span class="font-heading text-lg font-bold text-indigo-primary">${{ subtotal.toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-indigo-primary font-semibold">Total:</span>
+                <span class="font-heading text-2xl font-bold text-indigo-dark">${{ subtotal.toFixed(2) }}</span>
+              </div>
+            </div>
+
+            <!-- Validation Errors -->
+            <div v-if="validationErrors.length > 0" class="p-3 bg-red-100 text-red-700 text-sm border border-red-300 border-sm">
+              <div class="font-semibold mb-2">Please fix the following:</div>
+              <ul class="list-disc pl-5 space-y-1">
+                <li v-for="(error, idx) in validationErrors" :key="idx">{{ error }}</li>
+              </ul>
+            </div>
+
+            <!-- Buttons -->
+            <div class="grid grid-cols-2 gap-3 pt-4">
+              <AppButton
+                type="submit"
+                variant="secondary"
+                :disabled="!canSubmit || isSubmitting"
+                :loading="isSubmitting"
+                :label="isSubmitting ? 'Submitting...' : 'Complete Order'"
+              />
+              <AppButton
+                type="button"
+                variant="outline"
+                label="Cancel"
+                @click="$emit('close')"
+              />
+            </div>
+
+            <div v-if="submitMessage" class="p-3 text-sm border-sm" :class="submitMessage.type === 'success' ? 'bg-indigo-bg text-indigo-primary' : 'bg-red-100 text-red-700'">
+              {{ submitMessage.text }}
+            </div>
+          </form>
         </div>
       </div>
-    </Transition>
-  </Teleport>
+    </div>
+  </transition>
 </template>
 
 <script>
+import AppButton from './ui/AppButton.vue';
+
 export default {
   name: 'ProductModal',
+  components: { AppButton },
   props: {
-    isOpen: {
-      type: Boolean,
-      default: false
-    },
-    products: {
-      type: Array,
-      required: true
-    },
-    selectedProduct: {
-      type: Object,
-      default: null
-    }
+    isOpen: Boolean,
+    products: Array,
+    selectedProduct: Object
   },
   emits: ['close'],
   data() {
     return {
-      quantities: [],
-      customerForm: {
-        fullName: '',
-        phone: '',
+      selectedProducts: [],
+      productQuantities: {}, // { productId: quantity }
+      formData: {
+        name: '',
         email: '',
+        phone: '',
         address: '',
         city: '',
         postalCode: ''
       },
-      formErrors: {},
       isSubmitting: false,
-      submissionError: '',
-      orderSubmitted: false,
-      successOrderId: ''
+      submitMessage: null,
+      validationErrors: []
     };
   },
-  watch: {
-    isOpen(newVal) {
-      if (newVal) {
-        this.initQuantities();
-        this.orderSubmitted = false;
-        this.submissionError = '';
-        this.formErrors = {};
-      }
+  computed: {
+    subtotal() {
+      return this.selectedProducts.reduce((sum, id) => {
+        const product = this.products.find(p => p.id === id);
+        const quantity = this.productQuantities[id] || 1;
+        return sum + (product?.price || 0) * quantity;
+      }, 0);
     },
-    selectedProduct() {
-      if (this.isOpen) {
-        this.initQuantities();
-      }
+    canSubmit() {
+      return this.isFormValid() && !this.isSubmitting;
     }
   },
-  computed: {
-    grandTotal() {
-      return this.quantities.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    },
-    selectedItems() {
-      return this.quantities.filter(item => item.quantity > 0);
+  watch: {
+    selectedProduct(product) {
+      if (product) {
+        this.selectedProducts = [product.id];
+        this.productQuantities[product.id] = 1;
+      }
     }
   },
   methods: {
-    initQuantities() {
-      this.quantities = this.products.map(p => {
-        let defaultQty = 0;
-        if (this.selectedProduct && this.selectedProduct.id === p.id) {
-          defaultQty = 1;
-        }
-        return {
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          image: p.image,
-          quantity: defaultQty
-        };
-      });
-
-      // If no product pre-selected, default first item to 1
-      if (this.quantities.length > 0 && !this.quantities.some(q => q.quantity > 0)) {
-        this.quantities[0].quantity = 1;
+    selectProduct(product) {
+      const index = this.selectedProducts.indexOf(product.id);
+      if (index > -1) {
+        this.selectedProducts.splice(index, 1);
+        delete this.productQuantities[product.id];
+      } else {
+        this.selectedProducts.push(product.id);
+        this.productQuantities[product.id] = 1;
       }
     },
-    increaseQty(productId) {
-      const item = this.quantities.find(i => i.id === productId);
-      if (item) item.quantity++;
-      if (this.formErrors.items) delete this.formErrors.items;
+    getProductQuantity(productId) {
+      return this.productQuantities[productId] || 1;
     },
-    decreaseQty(productId) {
-      const item = this.quantities.find(i => i.id === productId);
-      if (item && item.quantity > 0) {
-        item.quantity--;
+    setProductQuantity(productId, quantity) {
+      if (quantity >= 1) {
+        this.productQuantities[productId] = quantity;
       }
     },
-    validateForm() {
-      const errors = {};
-      const form = this.customerForm;
-
-      if (this.selectedItems.length === 0) {
-        errors.items = 'Please select at least 1 product quantity above.';
-      }
-
-      if (!form.fullName.trim()) {
-        errors.fullName = 'Full name is required.';
-      }
-
-      if (!form.phone.trim()) {
-        errors.phone = 'Phone number is required.';
-      }
-
-      if (!form.email.trim()) {
-        errors.email = 'Email address is required.';
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-        errors.email = 'Please enter a valid email address.';
-      }
-
-      if (!form.address.trim()) {
-        errors.address = 'Street address is required.';
-      }
-
-      if (!form.city.trim()) {
-        errors.city = 'City is required.';
-      }
-
-      if (!form.postalCode.trim()) {
-        errors.postalCode = 'Postal code is required.';
-      }
-
-      this.formErrors = errors;
-      return Object.keys(errors).length === 0;
+    incrementProductQuantity(productId) {
+      this.productQuantities[productId] = (this.productQuantities[productId] || 1) + 1;
     },
-    async submitOrder() {
-      this.submissionError = '';
-      if (!this.validateForm()) return;
+    decrementProductQuantity(productId) {
+      if ((this.productQuantities[productId] || 1) > 1) {
+        this.productQuantities[productId] = (this.productQuantities[productId] || 1) - 1;
+      }
+    },
+    isFormValid() {
+      this.validationErrors = [];
+
+      if (this.selectedProducts.length === 0) {
+        this.validationErrors.push('Please select at least one product');
+      }
+
+      if (!this.formData.name || this.formData.name.trim() === '') {
+        this.validationErrors.push('Full name is required');
+      }
+
+      if (!this.formData.phone || this.formData.phone.trim() === '') {
+        this.validationErrors.push('Phone number is required');
+      }
+
+      if (!this.formData.email || this.formData.email.trim() === '') {
+        this.validationErrors.push('Email is required');
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.formData.email)) {
+        this.validationErrors.push('Email is invalid');
+      }
+
+      if (!this.formData.address || this.formData.address.trim() === '') {
+        this.validationErrors.push('Street address is required');
+      }
+
+      if (!this.formData.city || this.formData.city.trim() === '') {
+        this.validationErrors.push('City is required');
+      }
+
+      if (!this.formData.postalCode || this.formData.postalCode.trim() === '') {
+        this.validationErrors.push('Postal code is required');
+      }
+
+      return this.validationErrors.length === 0;
+    },
+    async handleSubmit() {
+      if (!this.isFormValid()) {
+        return;
+      }
 
       this.isSubmitting = true;
+      this.submitMessage = null;
 
       try {
+        // Build product details for the order - match backend expectations
+        const items = this.selectedProducts.map(productId => {
+          const product = this.products.find(p => p.id === productId);
+          const quantity = this.productQuantities[productId] || 1;
+          return {
+            name: product.name,  // Backend expects 'name', not 'productName'
+            quantity: quantity,
+            price: product.price
+          };
+        });
+
+        // Build payload matching backend expected structure
         const payload = {
-          items: this.selectedItems.map(i => ({
-            id: i.id,
-            name: i.name,
-            price: i.price,
-            quantity: i.quantity
-          })),
-          totalAmount: this.grandTotal,
-          fullName: this.customerForm.fullName.trim(),
-          email: this.customerForm.email.trim(),
-          phone: this.customerForm.phone.trim(),
-          address: this.customerForm.address.trim(),
-          city: this.customerForm.city.trim(),
-          postalCode: this.customerForm.postalCode.trim()
+          // Customer details - backend expects 'fullName', not 'name'
+          fullName: this.formData.name.trim(),
+          phone: this.formData.phone.trim(),
+          email: this.formData.email.trim(),
+          address: this.formData.address.trim(),
+          city: this.formData.city.trim(),
+          postalCode: this.formData.postalCode.trim(),
+          // Order details - backend expects 'items' and 'totalAmount'
+          items: items,
+          totalAmount: this.subtotal
         };
 
-        const response = await fetch('/api/orders', {
+        const response = await fetch('http://localhost:3000/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Server processing error.');
+        if (response.ok) {
+          this.submitMessage = { 
+            type: 'success', 
+            text: 'Order submitted successfully! We will contact you soon to confirm.' 
+          };
+          setTimeout(() => this.$emit('close'), 2500);
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          this.submitMessage = { 
+            type: 'error', 
+            text: errorData.error || errorData.message || 'Error submitting order. Please try again.' 
+          };
         }
-
-        this.orderSubmitted = true;
-        this.successOrderId = data.orderId;
-      } catch (err) {
-        console.error('Order Submission Failure:', err);
-        this.submissionError = err.message || 'Failed to submit order. Please check network connection.';
+      } catch (error) {
+        console.error('Order submission error:', error);
+        this.submitMessage = { 
+          type: 'error', 
+          text: 'Network error. Please check your connection and try again.' 
+        };
       } finally {
         this.isSubmitting = false;
       }
-    },
-    closeModal() {
-      this.$emit('close');
-    },
-    resetAndClose() {
-      this.customerForm = {
-        fullName: '',
-        phone: '',
-        email: '',
-        address: '',
-        city: '',
-        postalCode: ''
-      };
-      this.orderSubmitted = false;
-      this.closeModal();
     }
   }
 };
 </script>
 
 <style scoped>
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  background: rgba(18, 40, 29, 0.65);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  overflow-y: auto;
+.modal-enter-active, .modal-leave-active {
+  @apply transition-opacity duration-300;
 }
-
-.modal-container {
-  position: relative;
-  width: 100%;
-  max-width: 680px;
-  max-height: 90vh;
-  background: #FFFFFF;
-  border-radius: 28px;
-  padding: 2.5rem;
-  overflow-y: auto;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-}
-
-.modal-close-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: var(--color-sand-light);
-  color: var(--color-emerald-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.modal-close-btn:hover {
-  background: var(--color-gold);
-  color: var(--color-emerald-dark);
-}
-
-.modal-header {
-  margin-bottom: 1.8rem;
-  text-align: center;
-}
-
-.modal-badge {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--color-gold);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 0.4rem;
-}
-
-.modal-title {
-  font-size: 1.8rem;
-  color: var(--color-emerald-dark);
-  margin-bottom: 0.3rem;
-}
-
-.modal-subtitle {
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-}
-
-.section-box {
-  background: var(--color-sand-light);
-  border-radius: 18px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid rgba(26, 36, 32, 0.06);
-}
-
-.box-title {
-  font-family: var(--font-body);
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--color-emerald-dark);
-  margin-bottom: 1.2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.total-badge {
-  background: var(--color-emerald-primary);
-  color: var(--color-gold);
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-/* Product Selector List */
-.product-selector-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.selector-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.85rem 1rem;
-  background: #FFFFFF;
-  border-radius: 14px;
-  border: 1px solid rgba(26, 36, 32, 0.08);
-  transition: all 0.2s ease;
-}
-
-.selector-item.item-selected {
-  border-color: var(--color-emerald-primary);
-  box-shadow: 0 4px 12px rgba(30, 66, 48, 0.08);
-}
-
-.selector-thumb {
-  width: 52px;
-  height: 52px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.selector-info {
-  flex-grow: 1;
-}
-
-.selector-name {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--color-emerald-dark);
-}
-
-.selector-price {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-}
-
-.quantity-control {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  background: var(--color-sand-light);
-  padding: 0.25rem 0.5rem;
-  border-radius: 25px;
-  border: 1px solid rgba(26, 36, 32, 0.1);
-}
-
-.qty-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: none;
-  background: var(--color-white);
-  color: var(--color-emerald-dark);
-  font-weight: 700;
-  font-size: 1.1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease;
-}
-
-.qty-btn:hover:not(:disabled) {
-  background: var(--color-gold);
-}
-
-.qty-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.qty-display {
-  font-weight: 700;
-  font-size: 0.95rem;
-  min-width: 20px;
-  text-align: center;
-}
-
-/* Form Styles */
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.full-width {
-  grid-column: 1 / -1;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.form-group label {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--color-emerald-dark);
-}
-
-.req {
-  color: var(--color-error);
-}
-
-.form-group input {
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  border: 1.5px solid rgba(26, 36, 32, 0.15);
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.form-group input:focus {
-  border-color: var(--color-emerald-primary);
-  box-shadow: 0 0 0 3px rgba(30, 66, 48, 0.1);
-}
-
-.form-group input.input-error {
-  border-color: var(--color-error);
-}
-
-.field-error {
-  font-size: 0.75rem;
-  color: var(--color-error);
-}
-
-.error-banner {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  background: rgba(217, 56, 56, 0.1);
-  border: 1px solid var(--color-error);
-  border-radius: 10px;
-  color: var(--color-error);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.modal-footer {
-  margin-top: 1.5rem;
-}
-
-.btn-submit-order {
-  width: 100%;
-  padding: 1rem;
-  font-size: 1.05rem;
-}
-
-/* Success State */
-.modal-success-state {
-  text-align: center;
-  padding: 2rem 1rem;
-}
-
-.success-icon-wrap {
-  width: 70px;
-  height: 70px;
-  background: var(--color-sage-light);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem auto;
-  border: 2px solid var(--color-emerald-primary);
-}
-
-.success-checkmark {
-  font-size: 2.2rem;
-  color: var(--color-emerald-primary);
-  font-weight: bold;
-}
-
-.success-title {
-  font-size: 2rem;
-  color: var(--color-emerald-dark);
-  margin-bottom: 0.8rem;
-}
-
-.success-msg {
-  font-size: 1.1rem;
-  color: var(--color-text-dark);
-  margin-bottom: 0.5rem;
-}
-
-.order-ref {
-  font-weight: 800;
-  color: var(--color-emerald-primary);
-  background: var(--color-sage-light);
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-}
-
-.success-sub {
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-  margin-bottom: 2rem;
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Spinner */
-.spinner {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255,255,255,0.3);
-  border-radius: 50%;
-  border-top-color: #fff;
-  animation: spin 0.8s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Modal Transition */
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
+.modal-enter-from, .modal-leave-to {
+  @apply opacity-0;
 }
 </style>
