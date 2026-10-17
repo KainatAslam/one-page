@@ -2,7 +2,9 @@
   <component
     :is="resolvedTag"
     v-bind="resolvedBindings"
-    :disabled="isDisabled"
+    :disabled="isLink ? undefined : isDisabled"
+    :aria-disabled="isLink && isDisabled ? 'true' : undefined"
+    :tabindex="isLink && isDisabled ? -1 : undefined"
     :aria-label="resolvedAriaLabel"
     :aria-busy="loading || undefined"
     :class="buttonClasses"
@@ -20,11 +22,13 @@
         <slot name="icon-left" />
       </span>
 
-      <span v-if="showText" class="inline-flex items-center justify-center whitespace-nowrap">
+      <!-- Label Prop -->
+      <span v-if="hasLabel" class="inline-flex items-center justify-center whitespace-nowrap">
         {{ label }}
       </span>
 
-      <span v-else-if="showDefaultSlot" class="inline-flex items-center justify-center">
+      <!-- Default Slot Content -->
+      <span v-else-if="hasDefaultSlot" class="inline-flex items-center justify-center whitespace-nowrap">
         <slot />
       </span>
 
@@ -79,10 +83,10 @@ const isDisabled = computed(() => props.disabled || props.loading);
 const hasLeftIcon = computed(() => !!slots['icon-left']);
 const hasRightIcon = computed(() => !!slots['icon-right']);
 const hasDefaultSlot = computed(() => !!slots.default);
-const iconOnly = computed(() => !props.label && !hasDefaultSlot.value && (hasLeftIcon.value || hasRightIcon.value));
-const showLeftIcon = computed(() => props.iconPosition === 'left' && !!slots['icon-left']);
-const showRightIcon = computed(() => props.iconPosition === 'right' && !!slots['icon-right']);
-const showText = computed(() => Boolean(props.label) || (!iconOnly.value && hasDefaultSlot.value && !hasLeftIcon.value && !hasRightIcon.value));
+const hasLabel = computed(() => Boolean(props.label && props.label.trim()));
+const iconOnly = computed(() => !hasLabel.value && !hasDefaultSlot.value && (hasLeftIcon.value || hasRightIcon.value));
+const showLeftIcon = computed(() => props.iconPosition === 'left' && hasLeftIcon.value);
+const showRightIcon = computed(() => props.iconPosition === 'right' && hasRightIcon.value);
 const resolvedAriaLabel = computed(() => props.ariaLabel || (iconOnly.value ? 'Action button' : undefined));
 
 const resolvedBindings = computed(() => {
@@ -109,16 +113,16 @@ const variantClasses = {
 };
 
 const sizeClasses = {
-  sm: 'px-2 py-1 text-xs',
-  md: 'px-2.5 py-1.5 text-sm',
-  lg: 'px-3.5 py-3 text-base'
+  sm: 'px-2.5 py-1.5 text-xs',
+  md: 'px-4 py-2 text-sm',
+  lg: 'px-6 py-3 text-base'
 };
 
 const buttonClasses = computed(() => [
   'inline-flex items-center justify-center gap-2 font-body font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed border border-sm select-none no-underline',
   sizeClasses[props.size] || sizeClasses.md,
   variantClasses[props.variant] || variantClasses.primary,
-  isLink.value ? '' : 'cursor-pointer'
+  isLink.value ? (isDisabled.value ? 'pointer-events-none opacity-60' : 'cursor-pointer') : 'cursor-pointer'
 ].join(' '));
 
 function handleClick(event) {

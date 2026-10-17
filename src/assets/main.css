@@ -22,43 +22,35 @@
     @apply mx-auto max-w-6xl px-6;
   }
 
-  /* Button Components */
-  .btn-cta {
-    @apply inline-flex items-center justify-center gap-2.5 bg-gradient-to-br from-indigo-accent to-indigo-accent/80 text-indigo-dark font-body font-bold text-base px-8 py-3.5 border border-white/40 shadow-indigo-cta transition-all duration-normal hover:scale-105 hover:-translate-y-0.5 active:scale-95 active:translate-y-0 relative overflow-hidden cursor-pointer no-underline;
-  }
-
-  .btn-cta-emerald {
-    @apply bg-gradient-to-br from-indigo-primary to-indigo-light text-white shadow-lg shadow-indigo-primary/30 hover:shadow-lg hover:shadow-indigo-primary/40;
-  }
-
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 bg-transparent text-indigo-dark font-body font-semibold px-7 py-3.5 border-2 border-indigo-primary transition-all duration-fast hover:bg-indigo-primary hover:text-white cursor-pointer;
-  }
-
   /* Glass Card */
   .glass-card {
     @apply bg-white/85 backdrop-blur-glass border border-white/60 shadow-indigo-md;
   }
 
+  /* Hero Radial Background */
+  .hero-radial-bg {
+    background-image: radial-gradient(circle at 10% 20%, rgba(154, 140, 152, 0.12) 0%, transparent 60%), radial-gradient(circle at 90% 80%, rgba(201, 173, 167, 0.12) 0%, transparent 60%);
+  }
+
   /* Section Layouts */
   .section-padding {
-    @apply py-20 md:py-14;
+    @apply py-16 md:py-20;
   }
 
   .section-header {
-    @apply text-center max-w-md mx-auto mb-14;
+    @apply text-center max-w-xl mx-auto mb-12 sm:mb-14;
   }
 
   .section-tag {
-    @apply inline-block text-section-tag text-indigo-accent uppercase mb-3;
+    @apply inline-block text-section-tag text-indigo-primary font-bold uppercase tracking-wider mb-3;
   }
 
   .section-title {
-    @apply text-section-title font-heading text-indigo-dark mb-4;
+    @apply text-3xl sm:text-4xl lg:text-section-title font-heading text-indigo-dark mb-4 font-bold;
   }
 
   .section-subtitle {
-    @apply text-section-subtitle text-indigo-primary;
+    @apply text-section-subtitle text-indigo-primary leading-relaxed;
   }
 
   /* Scrollbar Styling */
@@ -78,13 +70,13 @@
     @apply bg-indigo-primary;
   }
 
-  /* Navbar Specific */
+  /* Navbar */
   .navbar {
-    @apply fixed top-0 left-0 right-0 z-50 px-0 py-5 transition-all duration-300 bg-indigo-bg/60 backdrop-blur-md;
+    @apply fixed top-0 left-0 right-0 z-50 px-0 py-4 transition-all duration-300 bg-indigo-bg/80 backdrop-blur-md;
   }
 
   .navbar.scrolled {
-    @apply py-3.5 bg-white/95 shadow-indigo-md;
+    @apply py-3 bg-white/95 shadow-indigo-md;
   }
 
   .navbar-container {
@@ -107,32 +99,8 @@
     @apply font-body text-xs font-semibold text-indigo-light uppercase tracking-wider;
   }
 
-  .nav-menu {
-    @apply hidden md:flex gap-8 items-center;
-  }
-
-  .nav-menu a {
-    @apply text-indigo-dark font-body text-sm transition-colors duration-200 hover:text-indigo-accent;
-  }
-
   .navbar-actions {
-    @apply flex items-center gap-4;
-  }
-
-  .mobile-toggle {
-    @apply md:hidden flex flex-col gap-1.5 w-8 h-8 bg-transparent border-0 cursor-pointer;
-  }
-
-  .mobile-toggle span {
-    @apply w-6 h-0.5 bg-indigo-dark transition-all duration-300;
-  }
-
-  .nav-menu.is-active {
-    @apply absolute top-full left-0 right-0 flex flex-col gap-4 p-6 bg-white/95 backdrop-blur-md shadow-indigo-md md:static md:gap-8 md:bg-transparent md:backdrop-blur-none md:shadow-none md:p-0;
-  }
-
-  .nav-menu.is-active a {
-    @apply block py-2;
+    @apply flex items-center gap-3 sm:gap-4;
   }
 
   /* Footer */

@@ -34,7 +34,7 @@ All customer orders and contact form submissions are validated and recorded serv
   - Radio pills for preferred contact method (**Email**, **Phone**, **WhatsApp**).
   - Dynamic contact detail input.
   - Message description text box.
-  - Submit handler sending payload to `/api/contacts`, appending a row to `data/contacts.xlsx`.
+  - Submit handler sending payload to `/api/contact`, appending a row to `data/contacts.xlsx`.
 - **Direct Highlighted CTAs**:
   - Clickable WhatsApp link: `https://wa.me/15550192834`
   - Clickable Phone Call link: `tel:+15550192834`
@@ -118,7 +118,7 @@ Records a customer product order.
 
 ---
 
-### `POST /api/contacts`
+### `POST /api/contact`
 Records a general contact inquiry.
 
 **Request Body:**

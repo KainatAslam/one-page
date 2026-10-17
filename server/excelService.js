@@ -31,10 +31,29 @@ const ORDER_COLUMNS = [
 const CONTACT_COLUMNS = [
   { header: 'Submission ID', key: 'id', width: 16 },
   { header: 'Timestamp', key: 'timestamp', width: 25 },
-  { header: 'Contact Method', key: 'contactMethod', width: 20 },
-  { header: 'Contact Detail', key: 'contactInfo', width: 30 },
+  { header: 'Customer Name', key: 'name', width: 25 },
+  { header: 'Email / Contact Info', key: 'contactInfo', width: 30 },
+  { header: 'Inquiry Type / Product', key: 'product', width: 25 },
   { header: 'Message', key: 'message', width: 50 }
 ];
+
+/**
+ * Sequential Promise Queue to prevent race conditions during concurrent Excel file operations
+ */
+class AsyncMutex {
+  constructor() {
+    this.queue = Promise.resolve();
+  }
+
+  runExclusive(task) {
+    const result = this.queue.then(() => task());
+    this.queue = result.catch(() => {});
+    return result;
+  }
+}
+
+const ordersMutex = new AsyncMutex();
+const contactsMutex = new AsyncMutex();
 
 /**
  * Initialize or get orders workbook
@@ -53,7 +72,7 @@ async function getOrdersWorkbook() {
     headerRow.fill = {
       type: 'pattern',
       pattern: 'solid',
-      fgColor: { argb: '2C5E43' }
+      fgColor: { argb: '4A4E69' }
     };
     headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
   }
@@ -77,7 +96,7 @@ async function getContactsWorkbook() {
     headerRow.fill = {
       type: 'pattern',
       pattern: 'solid',
-      fgColor: { argb: '1E3A8A' }
+      fgColor: { argb: '22223B' }
     };
     headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
   }
@@ -85,80 +104,89 @@ async function getContactsWorkbook() {
 }
 
 /**
- * Append order to orders.xlsx
+ * Append order to orders.xlsx with concurrency mutex protection
  */
 export async function saveOrder(orderData) {
-  const workbook = await getOrdersWorkbook();
-  let sheet = workbook.getWorksheet('Orders');
-  if (!sheet) {
-    sheet = workbook.addWorksheet('Orders');
-    sheet.columns = ORDER_COLUMNS;
-  }
+  return ordersMutex.runExclusive(async () => {
+    const workbook = await getOrdersWorkbook();
+    let sheet = workbook.getWorksheet('Orders');
+    if (!sheet) {
+      sheet = workbook.addWorksheet('Orders');
+      sheet.columns = ORDER_COLUMNS;
+    }
 
-  const orderId = `ORD-${Date.now().toString().slice(-6)}`;
-  const timestamp = new Date().toLocaleString('en-US', { timeZoneName: 'short' });
+    const orderId = `ORD-${Date.now().toString().slice(-6)}`;
+    const timestamp = new Date().toLocaleString('en-US', { timeZoneName: 'short' });
 
-  // Format items array into readable string
-  const itemsString = orderData.items
-    .map(i => `${i.name} (x${i.quantity}) - $${(i.price * i.quantity).toFixed(2)}`)
-    .join('; ');
+    // Format items array into readable string
+    const itemsString = (orderData.items || [])
+      .map(i => `${i.name} (x${i.quantity}) - $${(Number(i.price) * Number(i.quantity)).toFixed(2)}`)
+      .join('; ');
 
-  const totalStr = `$${Number(orderData.totalAmount).toFixed(2)}`;
+    const totalStr = `$${Number(orderData.totalAmount).toFixed(2)}`;
 
-  // Append using explicit array format so key-mapping is guaranteed regardless of readFile state
-  const row = sheet.addRow([
-    orderId,
-    timestamp,
-    orderData.fullName,
-    orderData.email,
-    orderData.phone,
-    orderData.address,
-    orderData.city,
-    orderData.postalCode,
-    itemsString,
-    totalStr
-  ]);
+    const row = sheet.addRow([
+      orderId,
+      timestamp,
+      orderData.fullName,
+      orderData.email,
+      orderData.phone,
+      orderData.address,
+      orderData.city,
+      orderData.postalCode,
+      itemsString,
+      totalStr
+    ]);
 
-  row.alignment = { vertical: 'middle', horizontal: 'left' };
+    row.alignment = { vertical: 'middle', horizontal: 'left' };
 
-  await workbook.xlsx.writeFile(ORDERS_FILE);
+    await workbook.xlsx.writeFile(ORDERS_FILE);
 
-  return {
-    orderId,
-    timestamp,
-    status: 'SUCCESS'
-  };
+    return {
+      orderId,
+      timestamp,
+      status: 'SUCCESS'
+    };
+  });
 }
 
 /**
- * Append contact inquiry to contacts.xlsx
+ * Append contact inquiry to contacts.xlsx with concurrency mutex protection
  */
 export async function saveContact(contactData) {
-  const workbook = await getContactsWorkbook();
-  let sheet = workbook.getWorksheet('Contacts');
-  if (!sheet) {
-    sheet = workbook.addWorksheet('Contacts');
-    sheet.columns = CONTACT_COLUMNS;
-  }
+  return contactsMutex.runExclusive(async () => {
+    const workbook = await getContactsWorkbook();
+    let sheet = workbook.getWorksheet('Contacts');
+    if (!sheet) {
+      sheet = workbook.addWorksheet('Contacts');
+      sheet.columns = CONTACT_COLUMNS;
+    }
 
-  const id = `MSG-${Date.now().toString().slice(-6)}`;
-  const timestamp = new Date().toLocaleString('en-US', { timeZoneName: 'short' });
+    const id = `MSG-${Date.now().toString().slice(-6)}`;
+    const timestamp = new Date().toLocaleString('en-US', { timeZoneName: 'short' });
 
-  const row = sheet.addRow([
-    id,
-    timestamp,
-    contactData.contactMethod,
-    contactData.contactInfo,
-    contactData.message
-  ]);
+    const name = contactData.name || contactData.fullName || 'N/A';
+    const contactInfo = contactData.email || contactData.contactInfo || contactData.phone || 'N/A';
+    const product = contactData.product || contactData.contactMethod || 'General Inquiry';
+    const message = contactData.message || '';
 
-  row.alignment = { vertical: 'middle', horizontal: 'left' };
+    const row = sheet.addRow([
+      id,
+      timestamp,
+      name,
+      contactInfo,
+      product,
+      message
+    ]);
 
-  await workbook.xlsx.writeFile(CONTACTS_FILE);
+    row.alignment = { vertical: 'middle', horizontal: 'left' };
 
-  return {
-    id,
-    timestamp,
-    status: 'SUCCESS'
-  };
+    await workbook.xlsx.writeFile(CONTACTS_FILE);
+
+    return {
+      id,
+      timestamp,
+      status: 'SUCCESS'
+    };
+  });
 }

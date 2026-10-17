@@ -1,12 +1,12 @@
-﻿<template>
+<template>
   <section id="about" class="section-padding bg-white">
     <div class="container">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
-        <!-- Image -->
-        <div class="glass-card p-12 lg:p-14 bg-gradient-to-br from-indigo-primary to-indigo-primary text-white shadow-indigo-lg border-sm">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <!-- Image / Quote Card -->
+        <div class="glass-card p-8 sm:p-12 lg:p-14 bg-gradient-to-br from-indigo-primary to-indigo-dark text-white shadow-indigo-lg border-sm">
           <div class="flex flex-col">
-            <span class="font-heading text-8xl leading-none text-indigo-accent -mb-4 block">"</span>
-            <p class="font-heading text-2xl leading-relaxed italic mb-8 text-indigo-bg">
+            <span class="font-heading text-7xl sm:text-8xl leading-none text-indigo-accent -mb-4 block">"</span>
+            <p class="font-heading text-xl sm:text-2xl leading-relaxed italic mb-8 text-indigo-bg">
               A clean tank means safer water for every family, every meal, and every day. Clean &amp; Cool makes that protection simple and effective.
             </p>
             <div class="flex flex-col">
@@ -21,16 +21,12 @@
           <div class="section-tag">About Us</div>
           <h2 class="section-title text-left">Your trusted solution for cleaner, safer water storage</h2>
           
-          <p class="text-lg text-indigo-primary mb-4 leading-relaxed">
+          <p class="text-base sm:text-lg text-indigo-primary mb-4 leading-relaxed">
             Clean &amp; Cool is a trusted brand offering high-quality Water Tank Cleaner Powder. Our powder helps remove sludge, algae, bacteria, and bad odor that build up on tank walls and floors, making water safer for daily use.
           </p>
-          
-          <p class="text-lg text-indigo-primary mb-8 leading-relaxed">
-            A dirty water tank can lead to diseases such as typhoid, hepatitis, diarrhea, and skin infections. Regular use of Clean &amp; Cool powder keeps your household water clean, safe, and healthy — in an easy, fast, and affordable way.
-          </p>
-
+         
           <!-- Pillars -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-8 pt-8 border-t border-indigo-dark/10">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-8 border-t border-indigo-dark/10">
             <div class="flex flex-col gap-2">
               <div class="text-3xl">🧼</div>
               <h4 class="font-body font-bold text-sm text-indigo-dark">Fast Cleaning</h4>

@@ -14,8 +14,7 @@
       :selected-product="activeSelectedProduct"
       @close="handleCloseModal"
     />
-    <!-- 2. About Section -->
-    <AboutSection />
+  
 
     <!-- 3. Products Section -->
     <ProductsSection 
@@ -24,10 +23,15 @@
       @open-modal="handleOpenModal(null)"
     />
 
+  <!-- 2. About Section -->
+    <AboutSection />
     <!-- 4. Contact Section -->
     <ContactSection />
 
 
+
+    <!-- Global Toast Notification Container -->
+    <AppToast />
 
     <!-- Footer -->
     <footer class="app-footer">
@@ -65,7 +69,7 @@
 
       <div class="footer-bottom">
         <div class="container copyright-row">
-          <p>© 2026 Clean &amp; Cool. All rights reserved. Server Excel Order Logging Active.</p>
+          <p>© 2026 Clean &amp; Cool. All rights reserved.</p>
         </div>
       </div>
     </footer>
@@ -80,6 +84,8 @@ import ProductsSection from './components/ProductsSection.vue';
 import ContactSection from './components/ContactSection.vue';
 import ProductModal from './components/ProductModal.vue';
 import AppButton from './components/ui/AppButton.vue';
+import AppToast from './components/ui/AppToast.vue';
+import productsData from './data/products.json';
 
 export default {
   name: 'App',
@@ -90,41 +96,14 @@ export default {
     ProductsSection,
     ContactSection,
     ProductModal,
-    AppButton
+    AppButton,
+    AppToast
   },
   data() {
     return {
       isModalOpen: false,
       activeSelectedProduct: null,
-      products: [
-        {
-          id: 'home',
-          name: 'Clean & Cool Water Tank Cleaner Powder',
-          tag: 'Home Tank',
-          volume: '1kg / 2.2lb',
-          price: 299.00,
-          image: '/images/product-placeholder.png',
-          description: 'Removes sludge, algae, and odor from household tanks for cleaner, safer water and peace of mind.'
-        },
-        {
-          id: 'commercial',
-          name: 'Commercial Tank Cleaning Pack',
-          tag: 'Office & School',
-          volume: '2kg / 4.4lb',
-          price: 499.00,
-          image: '/images/product-placeholder.png',
-          description: 'Built for larger storage systems needing deeper cleaning, stronger hygiene, and regular maintenance.'
-        },
-        {
-          id: 'kit',
-          name: 'Tank Care Starter Kit',
-          tag: 'Heavy Duty',
-          volume: '3kg / 6.6lb',
-          price: 699.00,
-          image: '/images/product-placeholder.png',
-          description: 'A robust cleaning solution for full tank upkeep, stubborn residue, and long-term water safety.'
-        }
-      ]
+      products: productsData
     };
   },
   methods: {

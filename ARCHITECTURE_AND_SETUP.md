@@ -71,7 +71,7 @@ The frontend is a single-page Vue 3 application styled with modern vanilla CSS u
 
 6. **`ContactSection.vue`**
    - Interactive form with preferred contact method selector (Email / Phone / WhatsApp) and inquiry textarea.
-   - `POST /api/contacts` submission handler displaying an on-screen confirmation message with Reference ID (`MSG-XXXXXX`).
+   - `POST /api/contact` submission handler displaying an on-screen confirmation message with Reference ID (`MSG-XXXXXX`).
    - Highlighted direct communication CTA buttons:
      - **WhatsApp**: `https://wa.me/15550192834`
      - **Phone Call**: `tel:+15550192834`
@@ -88,7 +88,7 @@ The backend is built with **Node.js** and **Express**, responsible for hosting A
   - Configures Express app, CORS middleware, and JSON parser.
   - Exposes REST endpoints:
     - `POST /api/orders` — Receives customer & order details, invokes `saveOrder()`.
-    - `POST /api/contacts` — Receives contact inquiry details, invokes `saveContact()`.
+    - `POST /api/contact` — Receives contact inquiry details, invokes `saveContact()`.
   - Serves static compiled frontend files from `dist/` in production mode.
 
 - **`server/excelService.js`**
